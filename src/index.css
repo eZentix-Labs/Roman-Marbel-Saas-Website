@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --app-max: 520px;
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sat: env(safe-area-inset-top, 0px);
+    /* iOS nav bar is 44pt; the large-title variant adds ~52pt beneath it. */
+    --nav-h: 44px;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    background: #05070f;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink text-hi font-sans text-base antialiased;
+    /* The premium gradient is fixed to the viewport, not the document, so it
+       does not stretch or repeat on long pages. */
+    background-image: theme('backgroundImage.premium');
+    background-attachment: fixed;
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    /* Kill the grey flash iOS paints over tapped elements; press states below
+       are explicit instead. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* N-3.1: 44×44 minimum, enforced here rather than per component. */
+  button, a[role='button'], [data-tap] { min-height: 44px; min-width: 44px; }
+  .prose a, a.inline-link, .no-tap { min-height: 0; min-width: 0; }
+
+  input, select, textarea {
+    @apply text-base;  /* 16px stops iOS Safari zooming the viewport on focus */
+    color-scheme: dark;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type='number'] { -moz-appearance: textfield; }
+
+  ::selection { background: rgba(77,124,254,.32); }
+
+  /* Hide scrollbars the way a native scroll view does. */
+  .no-bar { scrollbar-width: none; }
+  .no-bar::-webkit-scrollbar { display: none; }
+}
+
+@layer components {
+  .shell { @apply mx-auto w-full; max-width: var(--app-max); }
+
+  .eyebrow { @apply text-eyebrow font-semibold uppercase text-muted; }
+
+  /* ── iOS grouped card ──────────────────────────────────────────────────────
+     A dark card only reads as raised if it has a lighter hairline along its top
+     edge — the inset highlight does that. Without it, cards on a near-black
+     ground look like holes rather than surfaces.                             */
+  .card {
+    @apply rounded border border-line bg-surface shadow-card;
+    background-image: theme('backgroundImage.hairlight');
+  }
+
+  /* Grouped inset list — the iOS Settings pattern. Separators start after the
+     content inset, not at the card edge. */
+  .list {
+    @apply overflow-hidden rounded border border-line bg-surface;
+    background-image: theme('backgroundImage.hairlight');
+  }
+  .list > * + * { @apply border-t border-line; }
+  .list-inset > * + * { border-top: 0.5px solid theme('colors.line'); margin-left: 16px; }
+
+  /* ── Buttons ───────────────────────────────────────────────────────────────
+     iOS presses scale and dim rather than swapping background colour.        */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded
+           px-6 font-semibold transition-all duration-150 ease-ios;
+    min-height: 50px;
+    font-size: 17px;              /* iOS button text */
+    letter-spacing: -0.01em;
+  }
+  .btn:active { transform: scale(.97); opacity: .85; }
+
+  .btn-primary {
+    @apply btn text-white shadow-accent;
+    background-image: theme('backgroundImage.accentgrad');
+  }
+  .btn-secondary {
+    @apply btn border border-line bg-raised text-hi;
+  }
+  .btn-ghost { @apply btn bg-transparent text-accent; }
+  .btn:disabled { @apply pointer-events-none opacity-35; }
+  .btn:disabled:active { transform: none; }
+
+  /* ── Fields ───────────────────────────────────────────────────────────── */
+  .field {
+    @apply w-full rounded-sm border border-line bg-raised px-4 py-3 text-base text-hi
+           transition-colors placeholder:text-muted/70
+           focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/20;
+  }
+
+  .chip {
+    @apply inline-flex select-none items-center gap-1 rounded-pill border border-line
+           bg-raised px-4 text-small text-hi transition-all duration-150 ease-ios;
+    min-height: 40px;
+  }
+  .chip:active { transform: scale(.96); }
+  .chip-on {
+    @apply border-transparent text-white;
+    background-image: theme('backgroundImage.accentgrad');
+  }
+
+  /* ── Skeletons ────────────────────────────────────────────────────────── */
+  .skeleton {
+    @apply rounded-sm bg-raised;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+
+  /* ── Sheets ───────────────────────────────────────────────────────────────
+     iOS sheets dim the backdrop, round the top corners and carry a grabber.  */
+  .sheet-backdrop {
+    @apply fixed inset-0 z-40;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(2px);
+    animation: fade .2s ease-out;
+  }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+  .sheet-panel { animation: rise .34s cubic-bezier(.32,.72,0,1); }
+  @keyframes rise { from { transform: translateY(100%) } to { transform: translateY(0) } }
+
+  .grabber { @apply mx-auto h-[5px] w-9 rounded-pill bg-muted/40; }
+
+  /* ── Translucent chrome ───────────────────────────────────────────────────
+     Nav bars and tab bars on iOS are a blurred material, not a solid fill.   */
+  .glass {
+    background: rgba(10,16,32,.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  .hairline-t { border-top: 0.5px solid theme('colors.line'); }
+  .hairline-b { border-bottom: 0.5px solid theme('colors.line'); }
+
+  /* iOS switch, for the toggles that were checkboxes. */
+  .switch {
+    @apply relative inline-flex shrink-0 cursor-pointer items-center rounded-pill
+           transition-colors duration-200 ease-ios;
+    width: 51px; height: 31px; min-height: 31px;
+    background: theme('colors.raised');
+    border: 0.5px solid theme('colors.line');
+  }
+  .switch[data-on='true'] { background-image: theme('backgroundImage.accentgrad'); border-color: transparent; }
+  .switch::after {
+    content: '';
+    @apply absolute rounded-pill bg-white transition-transform duration-200 ease-ios;
+    width: 27px; height: 27px; top: 1px; left: 1px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.45);
+  }
+  .switch[data-on='true']::after { transform: translateX(20px); }
+
+  /* Press feedback for whole rows, the way a UITableViewCell highlights. */
+  .row-press { @apply transition-colors duration-100; }
+  .row-press:active { background-color: theme('colors.raised'); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
