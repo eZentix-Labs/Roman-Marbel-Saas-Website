@@ -5,6 +5,7 @@ import { AppStateProvider } from '@/state/AppState';
 import { AdminAuthProvider, RequireAdmin } from '@/state/AdminAuth';
 import { BottomNav } from '@/components/layout/AppShell';
 import Home from '@/pages/Home';
+//test
 
 /**
  * Route-level code splitting keeps the landing entry inside the N-1.2 budget
